@@ -41,24 +41,8 @@ const (
 	RETURN   = "RETURN"
 )
 
-// TokenType lexical unit type
-type TokenType string
-
-// Token lexical unit token
-type Token struct {
-	Type    TokenType
-	Literal string // lexical unit literals
-}
-
-func NewToken[T string | byte](tokenType TokenType, ch T) Token {
-	return Token{
-		Type:    tokenType,
-		Literal: string(ch),
-	}
-}
-
 // keywords map
-var keywords = map[string]TokenType{
+var keywords = map[string]Type{
 	"fn":     FUNCTION,
 	"let":    LET,
 	"true":   TRUE,
@@ -68,8 +52,24 @@ var keywords = map[string]TokenType{
 	"return": RETURN,
 }
 
+// Type lexical unit type
+type Type string
+
+// Token lexical unit token
+type Token struct {
+	Type    Type
+	Literal string // lexical unit literals
+}
+
+func New[T string | byte](tokenType Type, ch T) Token {
+	return Token{
+		Type:    tokenType,
+		Literal: string(ch),
+	}
+}
+
 // LookupIdent lookup ident from keyword map
-func LookupIdent(key string) TokenType {
+func LookupIdent(key string) Type {
 	if tok, ok := keywords[key]; ok {
 		return tok
 	}

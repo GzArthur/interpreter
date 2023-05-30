@@ -29,7 +29,7 @@ if (5 < 10) {
 `
 
 	tests := []struct {
-		expectedType    token.TokenType
+		expectedType    token.Type
 		expectedLiteral string
 	}{
 		{token.LET, "let"},
@@ -108,7 +108,7 @@ if (5 < 10) {
 		{token.EOF, ""},
 	}
 
-	l := NewLexer(input)
+	l := New(input)
 
 	for i, tt := range tests {
 		tok := l.ReadToken()
