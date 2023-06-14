@@ -9,6 +9,7 @@ import (
 )
 
 const (
+	// Priority definition
 	_           int = iota
 	LOWEST          // doesn't exist yet
 	EQUALS          // ==
@@ -40,9 +41,9 @@ type Parser struct {
 	l              *lexer.Lexer
 	currToken      token.Token
 	peekToken      token.Token
-	errors         []string // collect exception info during parsing
 	prefixParseFns map[token.Type]prefixParseFn
 	infixParseFns  map[token.Type]infixParseFn
+	errors         []string // collect exception info during parsing
 }
 
 func New(l *lexer.Lexer) *Parser {
@@ -56,24 +57,24 @@ func New(l *lexer.Lexer) *Parser {
 	p.nextToken()
 	p.nextToken()
 	// register prefix functions
-	p.registerPrefix(token.TRUE, p.parseBoolean)
-	p.registerPrefix(token.FALSE, p.parseBoolean)
-	p.registerPrefix(token.IDENTIFIER, p.parseIdentifier)
 	p.registerPrefix(token.INT, p.parseIntegerLiteral)
 	p.registerPrefix(token.BANG, p.parsePrefixExpression)
 	p.registerPrefix(token.MINUS, p.parsePrefixExpression)
-	p.registerPrefix(token.LPAREN, p.parseGroupedExpression)
+	p.registerPrefix(token.TRUE, p.parseBoolean)
+	p.registerPrefix(token.FALSE, p.parseBoolean)
+	p.registerPrefix(token.IDENTIFIER, p.parseIdentifier)
 	p.registerPrefix(token.IF, p.parseIfExpression)
 	p.registerPrefix(token.FUNCTION, p.parseFunctionLiteral)
+	p.registerPrefix(token.LPAREN, p.parseGroupedExpression)
 	// register infix functions
 	p.registerInfix(token.PLUS, p.parseInfixExpression)
 	p.registerInfix(token.MINUS, p.parseInfixExpression)
+	p.registerInfix(token.ASTERISK, p.parseInfixExpression)
+	p.registerInfix(token.SLASH, p.parseInfixExpression)
 	p.registerInfix(token.EQ, p.parseInfixExpression)
 	p.registerInfix(token.NOT_EQ, p.parseInfixExpression)
-	p.registerInfix(token.LT, p.parseInfixExpression)
 	p.registerInfix(token.GT, p.parseInfixExpression)
-	p.registerInfix(token.SLASH, p.parseInfixExpression)
-	p.registerInfix(token.ASTERISK, p.parseInfixExpression)
+	p.registerInfix(token.LT, p.parseInfixExpression)
 	p.registerInfix(token.LPAREN, p.parseCallFunction)
 	return p
 }
@@ -149,17 +150,35 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 	return stmt
 }
 
-func (p *Parser) nextToken() {
-	p.currToken = p.peekToken
-	p.peekToken = p.l.ReadToken()
+func (p *Parser) parseExpression(precedence int) ast.Expression {
+	prefix := p.prefixParseFns[p.currToken.Type]
+	if prefix == nil {
+		p.CollectPrefixParseFnError(p.currToken.Type)
+		return nil
+	}
+	leftExpr := prefix()
+	for !p.expectPeekTokenType(token.SEMICOLON) && precedence < p.peekPrecedence() {
+		// precedence express the current right constraint capacity
+		// p.peekPrecedence() express the current left constraint capacity
+		// precedence < p.peekPrecedence() condition checks if the left constraint capacity of the next operator or lexical unit
+		// is stronger than the current right constraint capacity.
+		// if so, the current parsed content will be fused from left to right by the next operator
+		// and passed to the next operator's infixParseFn
+		infix := p.infixParseFns[p.peekToken.Type]
+		if infix == nil {
+			break
+		}
+		p.nextToken()
+		leftExpr = infix(leftExpr)
+	}
+	return leftExpr
 }
 
-func (p *Parser) registerPrefix(t token.Type, fn prefixParseFn) {
-	p.prefixParseFns[t] = fn
-}
-
-func (p *Parser) registerInfix(t token.Type, fn infixParseFn) {
-	p.infixParseFns[t] = fn
+func (p *Parser) parseBoolean() ast.Expression {
+	return &ast.Boolean{
+		Token: p.currToken,
+		Value: p.expectCurrTokenType(token.TRUE),
+	}
 }
 
 func (p *Parser) parseIntegerLiteral() ast.Expression {
@@ -177,13 +196,6 @@ func (p *Parser) parseIdentifier() ast.Expression {
 	return &ast.Identifier{
 		Token: p.currToken,
 		Value: p.currToken.Literal,
-	}
-}
-
-func (p *Parser) parseBoolean() ast.Expression {
-	return &ast.Boolean{
-		Token: p.currToken,
-		Value: p.expectCurrTokenType(token.TRUE),
 	}
 }
 
@@ -218,30 +230,6 @@ func (p *Parser) parseGroupedExpression() ast.Expression {
 		return nil
 	}
 	return expr
-}
-
-func (p *Parser) parseExpression(precedence int) ast.Expression {
-	prefix := p.prefixParseFns[p.currToken.Type]
-	if prefix == nil {
-		p.CollectPrefixParseFnError(p.currToken.Type)
-		return nil
-	}
-	leftExpr := prefix()
-	for !p.expectPeekTokenType(token.SEMICOLON) && precedence < p.peekPrecedence() {
-		// precedence express the current right constraint capacity
-		// p.peekPrecedence() express the current left constraint capacity
-		// precedence < p.peekPrecedence() condition checks if the left constraint capacity of the next operator or lexical unit
-		// is stronger than the current right constraint capacity.
-		// if so, the current parsed content will be fused from left to right by the next operator
-		// and passed to the next operator's infixParseFn
-		infix := p.infixParseFns[p.peekToken.Type]
-		if infix == nil {
-			break
-		}
-		p.nextToken()
-		leftExpr = infix(leftExpr)
-	}
-	return leftExpr
 }
 
 func (p *Parser) parseIfExpression() ast.Expression {
@@ -284,6 +272,34 @@ func (p *Parser) parseFunctionLiteral() ast.Expression {
 	return expr
 }
 
+func (p *Parser) parseFunctionParameters() []*ast.Identifier {
+	var identifiers []*ast.Identifier
+	if p.expectPeekTokenType(token.RPAREN) {
+		// case fn()
+		p.nextToken()
+		return identifiers
+	}
+
+	p.nextToken()
+	for {
+		identifier := &ast.Identifier{
+			Token: p.currToken,
+			Value: p.currToken.Literal,
+		}
+		identifiers = append(identifiers, identifier)
+		if p.expectPeekTokenType(token.COMMA) {
+			p.nextToken()
+			p.nextToken()
+			continue
+		}
+		break
+	}
+	if !p.expectPeekIs(token.RPAREN) {
+		return nil
+	}
+	return identifiers
+}
+
 func (p *Parser) parseCallFunction(function ast.Expression) ast.Expression {
 	expr := &ast.CallExpression{Token: p.currToken, Function: function}
 	expr.Arguments = p.parseCallArguments()
@@ -311,34 +327,6 @@ func (p *Parser) parseCallArguments() []ast.Expression {
 		return nil
 	}
 	return args
-}
-
-func (p *Parser) parseFunctionParameters() []*ast.Identifier {
-	var identifiers []*ast.Identifier
-	if p.expectPeekTokenType(token.RPAREN) {
-		// case fn()
-		p.nextToken()
-		return identifiers
-	}
-
-	p.nextToken()
-	for {
-		identifier := &ast.Identifier{
-			Token: p.currToken,
-			Value: p.currToken.Literal,
-		}
-		identifiers = append(identifiers, identifier)
-		if p.expectPeekTokenType(token.COMMA) {
-			p.nextToken()
-			p.nextToken()
-			continue
-		}
-		break
-	}
-	if !p.expectPeekIs(token.RPAREN) {
-		return nil
-	}
-	return identifiers
 }
 
 func (p *Parser) parseBlockStatement() *ast.BlockStatement {
@@ -401,4 +389,17 @@ func (p *Parser) currPrecedence() int {
 		return precedence
 	}
 	return LOWEST
+}
+
+func (p *Parser) nextToken() {
+	p.currToken = p.peekToken
+	p.peekToken = p.l.ReadToken()
+}
+
+func (p *Parser) registerPrefix(t token.Type, fn prefixParseFn) {
+	p.prefixParseFns[t] = fn
+}
+
+func (p *Parser) registerInfix(t token.Type, fn infixParseFn) {
+	p.infixParseFns[t] = fn
 }

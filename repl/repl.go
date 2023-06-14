@@ -3,6 +3,8 @@ package repl
 import (
 	"bufio"
 	"fmt"
+	"github.com/GzArthur/interpreter/evaluator"
+	"github.com/GzArthur/interpreter/object"
 	"github.com/GzArthur/interpreter/parser"
 	"io"
 
@@ -15,6 +17,7 @@ const PROMPT = ">> "
 func StartREPL(input io.Reader, output io.Writer) {
 	// read the user's input from the input stream
 	scanner := bufio.NewScanner(input)
+	env := object.NewEnv()
 	for {
 		// outputs the identity >>  before user input
 		if _, err := fmt.Fprint(output, PROMPT); err != nil {
@@ -32,8 +35,12 @@ func StartREPL(input io.Reader, output io.Writer) {
 			printParserErrors(output, p.Errors())
 			continue
 		}
-		if _, err := io.WriteString(output, fmt.Sprintf("%s\n", program.PrintNode())); err != nil {
-			panic("print parser program Error")
+
+		obj := evaluator.Eval(program, env)
+		if obj != nil {
+			if _, err := io.WriteString(output, fmt.Sprintf("%s\n", obj.Inspect())); err != nil {
+				panic("output Error")
+			}
 		}
 	}
 }
