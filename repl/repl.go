@@ -3,12 +3,12 @@ package repl
 import (
 	"bufio"
 	"fmt"
-	"github.com/GzArthur/interpreter/evaluator"
-	"github.com/GzArthur/interpreter/object"
-	"github.com/GzArthur/interpreter/parser"
+	"github.com/GzzyZm/interpreter/evaluator"
+	"github.com/GzzyZm/interpreter/object"
+	"github.com/GzzyZm/interpreter/parser"
 	"io"
 
-	"github.com/GzArthur/interpreter/lexer"
+	"github.com/GzzyZm/interpreter/lexer"
 )
 
 const PROMPT = ">> "

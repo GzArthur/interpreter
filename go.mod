@@ -1,3 +1,3 @@
-module github.com/GzArthur/interpreter
+module github.com/GzzyZm/interpreter
 
 go 1.18

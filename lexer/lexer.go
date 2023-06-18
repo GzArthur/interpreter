@@ -1,6 +1,6 @@
 package lexer
 
-import "github.com/GzArthur/interpreter/token"
+import "github.com/GzzyZm/interpreter/token"
 
 // Lexer lexical analysing struct
 type Lexer struct {

@@ -2,8 +2,8 @@ package evaluator
 
 import (
 	"fmt"
-	"github.com/GzArthur/interpreter/ast"
-	"github.com/GzArthur/interpreter/object"
+	"github.com/GzzyZm/interpreter/ast"
+	"github.com/GzzyZm/interpreter/object"
 )
 
 var (

@@ -2,9 +2,9 @@ package parser
 
 import (
 	"fmt"
-	"github.com/GzArthur/interpreter/ast"
-	"github.com/GzArthur/interpreter/lexer"
-	"github.com/GzArthur/interpreter/token"
+	"github.com/GzzyZm/interpreter/ast"
+	"github.com/GzzyZm/interpreter/lexer"
+	"github.com/GzzyZm/interpreter/token"
 	"strconv"
 )
 

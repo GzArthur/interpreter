@@ -3,7 +3,7 @@ package ast
 import (
 	"bytes"
 	"fmt"
-	"github.com/GzArthur/interpreter/token"
+	"github.com/GzzyZm/interpreter/token"
 	"strings"
 )
 

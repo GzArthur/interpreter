@@ -3,7 +3,7 @@ package object
 import (
 	"bytes"
 	"fmt"
-	"github.com/GzArthur/interpreter/ast"
+	"github.com/GzzyZm/interpreter/ast"
 	"strings"
 )
 

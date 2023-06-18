@@ -1,9 +1,9 @@
 package evaluator
 
 import (
-	"github.com/GzArthur/interpreter/lexer"
-	"github.com/GzArthur/interpreter/object"
-	"github.com/GzArthur/interpreter/parser"
+	"github.com/GzzyZm/interpreter/lexer"
+	"github.com/GzzyZm/interpreter/object"
+	"github.com/GzzyZm/interpreter/parser"
 	"testing"
 )
 

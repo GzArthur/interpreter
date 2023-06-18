@@ -2,8 +2,8 @@ package parser
 
 import (
 	"fmt"
-	"github.com/GzArthur/interpreter/ast"
-	"github.com/GzArthur/interpreter/lexer"
+	"github.com/GzzyZm/interpreter/ast"
+	"github.com/GzzyZm/interpreter/lexer"
 	"testing"
 )
 
