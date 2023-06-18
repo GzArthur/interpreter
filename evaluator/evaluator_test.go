@@ -350,7 +350,7 @@ func testBooleanObject(t *testing.T, obj object.Object, expected bool) bool {
 }
 
 func testNullObject(t *testing.T, obj object.Object) bool {
-	if obj != NULL_OBJ {
+	if obj != nullObj {
 		t.Errorf("object is not NULL. got=%T (%+v)", obj, obj)
 		return false
 	}

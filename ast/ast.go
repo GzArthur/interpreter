@@ -44,65 +44,7 @@ func (p *Program) PrintNode() string {
 	return out.String()
 }
 
-type Boolean struct {
-	Token token.Token
-	Value bool
-}
-
-func (b *Boolean) expressionNode()      {}
-func (b *Boolean) TokenLiteral() string { return b.Token.Literal }
-func (b *Boolean) PrintNode() string    { return b.Token.Literal }
-
-type IntegerLiteral struct {
-	Token token.Token
-	Value int64
-}
-
-func (i *IntegerLiteral) expressionNode()      {}
-func (i *IntegerLiteral) TokenLiteral() string { return i.Token.Literal }
-func (i *IntegerLiteral) PrintNode() string    { return i.Token.Literal }
-
-type Identifier struct {
-	Token token.Token
-	Value string
-}
-
-func (i *Identifier) expressionNode()      {}
-func (i *Identifier) TokenLiteral() string { return i.Token.Literal }
-func (i *Identifier) PrintNode() string    { return i.Value }
-
-type BlockStatement struct {
-	Token      token.Token // '{' lexical unit
-	Statements []Statement
-}
-
-func (b *BlockStatement) statementNode()       {}
-func (b *BlockStatement) TokenLiteral() string { return b.Token.Literal }
-func (b *BlockStatement) PrintNode() string {
-	var out bytes.Buffer
-	for _, statement := range b.Statements {
-		out.WriteString(statement.PrintNode())
-	}
-	return out.String()
-}
-
-type FunctionLiteral struct {
-	Token      token.Token
-	Parameters []*Identifier
-	Body       *BlockStatement
-}
-
-func (f *FunctionLiteral) expressionNode()      {}
-func (f *FunctionLiteral) TokenLiteral() string { return f.Token.Literal }
-func (f *FunctionLiteral) PrintNode() string {
-	var out bytes.Buffer
-	var params []string
-	for _, p := range f.Parameters {
-		params = append(params, p.PrintNode())
-	}
-	out.WriteString(fmt.Sprintf("%s(%s) %s", f.TokenLiteral(), strings.Join(params, ", "), f.Body.PrintNode()))
-	return out.String()
-}
+// Statement node type
 
 type LetStatement struct {
 	Token token.Token
@@ -139,6 +81,21 @@ func (r *ReturnStatement) PrintNode() string {
 	return out.String()
 }
 
+type BlockStatement struct {
+	Token      token.Token // '{' lexical unit
+	Statements []Statement
+}
+
+func (b *BlockStatement) statementNode()       {}
+func (b *BlockStatement) TokenLiteral() string { return b.Token.Literal }
+func (b *BlockStatement) PrintNode() string {
+	var out bytes.Buffer
+	for _, statement := range b.Statements {
+		out.WriteString(statement.PrintNode())
+	}
+	return out.String()
+}
+
 type ExpressionStatement struct {
 	Token      token.Token
 	Expression Expression
@@ -152,6 +109,35 @@ func (e *ExpressionStatement) PrintNode() string {
 	}
 	return ""
 }
+
+//  Expression Node type
+
+type Boolean struct {
+	Token token.Token
+	Value bool
+}
+
+func (b *Boolean) expressionNode()      {}
+func (b *Boolean) TokenLiteral() string { return b.Token.Literal }
+func (b *Boolean) PrintNode() string    { return b.Token.Literal }
+
+type Integer struct {
+	Token token.Token
+	Value int64
+}
+
+func (i *Integer) expressionNode()      {}
+func (i *Integer) TokenLiteral() string { return i.Token.Literal }
+func (i *Integer) PrintNode() string    { return i.Token.Literal }
+
+type Identifier struct {
+	Token token.Token
+	Value string
+}
+
+func (i *Identifier) expressionNode()      {}
+func (i *Identifier) TokenLiteral() string { return i.Token.Literal }
+func (i *Identifier) PrintNode() string    { return i.Value }
 
 type PrefixExpression struct {
 	Token     token.Token
@@ -197,6 +183,26 @@ func (i *IfExpression) PrintNode() string {
 	if i.Alternative != nil {
 		out.WriteString(fmt.Sprintf("else %s", i.Alternative.PrintNode()))
 	}
+	return out.String()
+}
+
+type FunctionLiteral struct {
+	Token      token.Token
+	Parameters []*Identifier
+	Body       *BlockStatement
+}
+
+func (f *FunctionLiteral) expressionNode()      {}
+func (f *FunctionLiteral) TokenLiteral() string { return f.Token.Literal }
+func (f *FunctionLiteral) PrintNode() string {
+	var (
+		out    bytes.Buffer
+		params []string
+	)
+	for _, p := range f.Parameters {
+		params = append(params, p.PrintNode())
+	}
+	out.WriteString(fmt.Sprintf("%s(%s) %s", f.TokenLiteral(), strings.Join(params, ", "), f.Body.PrintNode()))
 	return out.String()
 }
 

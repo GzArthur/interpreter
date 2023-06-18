@@ -1,11 +1,11 @@
 package token
 
 const (
-	ILLEGAL = "IILLEGAL" // unknown
-	EOF     = "EOF"      // end of file
+	ILLEGAL = "ILLEGAL" // unknown
+	EOF     = "EOF"     // end of file
 
 	// Identifier
-	IDENTIFIER = "IDENTIFIER" // variable name: x、y, function name: max、add
+	IDENTIFIER = "IDENTIFIER" // e.g. variable name: x、y, function name: max、add
 
 	// Literals
 	INT = "INT"
@@ -61,9 +61,9 @@ type Token struct {
 	Literal string // lexical unit literals
 }
 
-func New[T string | byte](tokenType Type, ch T) Token {
+func New[T string | byte](t Type, ch T) Token {
 	return Token{
-		Type:    tokenType,
+		Type:    t,
 		Literal: string(ch),
 	}
 }

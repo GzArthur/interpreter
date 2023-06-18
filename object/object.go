@@ -10,14 +10,14 @@ import (
 type Type string
 
 const (
-	INTEGER_OBJ  = "INTEGER"
-	BOOLEAN_OBJ  = "BOOLEAN"
-	NULL_OBJ     = "NULL"
-	RETURN_OBJ   = "RETURN"
-	ERROR_OBJ    = "ERROR"
-	FUNCTION_OBJ = "FUNCTION"
+	IntegerObj  = "INTEGER"
+	BooleanObj  = "BOOLEAN"
+	NullObj     = "NULL"
+	ReturnObj   = "RETURN"
+	ErrorObj    = "ERROR"
+	FunctionObj = "FUNCTION"
 
-	NULL_VALUE = "null"
+	NullValue = "null"
 )
 
 type Object interface {
@@ -30,7 +30,7 @@ type Integer struct {
 }
 
 func (i *Integer) Type() Type {
-	return INTEGER_OBJ
+	return IntegerObj
 }
 func (i *Integer) Inspect() string {
 	return fmt.Sprintf("%d", i.Value)
@@ -41,7 +41,7 @@ type Boolean struct {
 }
 
 func (b *Boolean) Type() Type {
-	return BOOLEAN_OBJ
+	return BooleanObj
 }
 func (b *Boolean) Inspect() string {
 	return fmt.Sprintf("%t", b.Value)
@@ -50,10 +50,10 @@ func (b *Boolean) Inspect() string {
 type Null struct{}
 
 func (n *Null) Type() Type {
-	return NULL_OBJ
+	return NullObj
 }
 func (n *Null) Inspect() string {
-	return NULL_VALUE
+	return NullValue
 }
 
 type Return struct {
@@ -61,7 +61,7 @@ type Return struct {
 }
 
 func (r *Return) Type() Type {
-	return RETURN_OBJ
+	return ReturnObj
 }
 func (r *Return) Inspect() string {
 	return r.Value.Inspect()
@@ -72,7 +72,7 @@ type Error struct {
 }
 
 func (e *Error) Type() Type {
-	return ERROR_OBJ
+	return ErrorObj
 }
 func (e *Error) Inspect() string {
 	return fmt.Sprintf("ERROR: %s" + e.Message)
@@ -85,7 +85,7 @@ type Function struct {
 }
 
 func (f *Function) Type() Type {
-	return FUNCTION_OBJ
+	return FunctionObj
 }
 func (f *Function) Inspect() string {
 	var out bytes.Buffer

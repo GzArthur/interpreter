@@ -4,79 +4,79 @@ import "github.com/GzArthur/interpreter/token"
 
 // Lexer lexical analysing struct
 type Lexer struct {
-	input    string // the string to lexer
-	ch       byte   // current character
-	position int    // current position
+	textToBeParsed string // the string to lexer
+	currChar       byte   // current character
+	currPosition   int    // current currPosition
 }
 
 func New(input string) *Lexer {
 	l := &Lexer{
-		input: input,
+		textToBeParsed: input,
 	}
-	// initialize the input string which preforms lexical parsing
-	if len(l.input) > 0 {
-		l.ch = l.input[l.position]
+	// initialize the textToBeParsed string which preforms lexical parsing
+	if len(l.textToBeParsed) > 0 {
+		l.currChar = l.textToBeParsed[l.currPosition]
 	}
 	return l
 }
 
-// ReadToken read the complete one token from the input string which performs lexical parsing
+// ReadToken read the complete one token from the textToBeParsed string which performs lexical parsing
 func (l *Lexer) ReadToken() token.Token {
 	var tok token.Token
 
 	l.skipWhitespace()
 
-	switch l.ch {
+	switch l.currChar {
 	case '/':
-		tok = token.New(token.SLASH, l.ch)
+		tok = token.New(token.SLASH, l.currChar)
 	case '*':
-		tok = token.New(token.ASTERISK, l.ch)
+		tok = token.New(token.ASTERISK, l.currChar)
 	case '<':
-		tok = token.New(token.LT, l.ch)
+		tok = token.New(token.LT, l.currChar)
 	case '>':
-		tok = token.New(token.GT, l.ch)
+		tok = token.New(token.GT, l.currChar)
 	case ';':
-		tok = token.New(token.SEMICOLON, l.ch)
+		tok = token.New(token.SEMICOLON, l.currChar)
 	case ',':
-		tok = token.New(token.COMMA, l.ch)
+		tok = token.New(token.COMMA, l.currChar)
 	case '{':
-		tok = token.New(token.LBRACE, l.ch)
+		tok = token.New(token.LBRACE, l.currChar)
 	case '}':
-		tok = token.New(token.RBRACE, l.ch)
+		tok = token.New(token.RBRACE, l.currChar)
 	case '(':
-		tok = token.New(token.LPAREN, l.ch)
+		tok = token.New(token.LPAREN, l.currChar)
 	case ')':
-		tok = token.New(token.RPAREN, l.ch)
+		tok = token.New(token.RPAREN, l.currChar)
 	case '+':
-		tok = token.New(token.PLUS, l.ch)
+		tok = token.New(token.PLUS, l.currChar)
 	case '-':
-		tok = token.New(token.MINUS, l.ch)
+		tok = token.New(token.MINUS, l.currChar)
 	case '=':
-		if l.peekNextCharacter() != '=' {
-			tok = token.New(token.ASSIGN, l.ch)
-		} else {
+		if l.peekNextCharacter() == '=' {
 			l.readNextCharacter()
 			tok = token.New(token.EQ, "==")
+		} else {
+			tok = token.New(token.ASSIGN, l.currChar)
 		}
 	case '!':
-		if l.peekNextCharacter() != '=' {
-			tok = token.New(token.BANG, l.ch)
-		} else {
+		if l.peekNextCharacter() == '=' {
 			l.readNextCharacter()
 			tok = token.New(token.NOT_EQ, "!=")
+		} else {
+			tok = token.New(token.BANG, l.currChar)
 		}
 	case 0:
 		tok.Literal = ""
 		tok.Type = token.EOF
 	default:
-		if isLetter(l.ch) {
+		if isLetter(l.currChar) {
 			tok.Literal = l.readIdentifier()
 			tok.Type = token.LookupIdent(tok.Literal)
-		} else if isDigit(l.ch) {
+		} else if isDigit(l.currChar) {
 			tok.Literal = l.readNumber()
 			tok.Type = token.INT
 		} else {
-			tok = token.New(token.ILLEGAL, l.ch)
+			tok = token.New(token.ILLEGAL, l.currChar)
 		}
 	}
 	l.readNextCharacter()
@@ -85,54 +85,54 @@ func (l *Lexer) ReadToken() token.Token {
 
 // skipWhitespace skip whitespace
 func (l *Lexer) skipWhitespace() {
-	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
+	for l.currChar == ' ' || l.currChar == '\t' || l.currChar == '\n' || l.currChar == '\r' {
 		l.readNextCharacter()
 	}
 }
 
 // readNumber read the complete one number
 func (l *Lexer) readNumber() string {
-	startPos := l.position
+	startPos := l.currPosition
 	for {
 		if nc := l.peekNextCharacter(); !isDigit(nc) {
 			break
 		}
 		l.readNextCharacter()
 	}
-	return l.input[startPos : l.position+1]
+	return l.textToBeParsed[startPos : l.currPosition+1]
 }
 
 // readIdentifier read the complete one identifier
 func (l *Lexer) readIdentifier() string {
-	startPos := l.position
+	startPos := l.currPosition
 	for {
 		if nc := l.peekNextCharacter(); !isLetter(nc) {
 			break
 		}
 		l.readNextCharacter()
 	}
-	return l.input[startPos : l.position+1]
+	return l.textToBeParsed[startPos : l.currPosition+1]
 }
 
-// readNextCharacter set currentCharacter value and move relation position
+// readNextCharacter set currentCharacter value and move relation currPosition
 func (l *Lexer) readNextCharacter() {
-	l.position++
-	if l.position >= len(l.input) {
-		// the position out of bounds
-		l.ch = 0
+	l.currPosition++
+	if l.currPosition >= len(l.textToBeParsed) {
+		// the currPosition out of bounds
+		l.currChar = 0
 	} else {
-		l.ch = l.input[l.position]
+		l.currChar = l.textToBeParsed[l.currPosition]
 	}
 }
 
 // peekNextCharacter peek next character for some lexeral unit like == or !=
 func (l *Lexer) peekNextCharacter() byte {
-	nextPos := l.position + 1
-	if nextPos >= len(l.input) {
-		// the position out of bounds
+	nextPos := l.currPosition + 1
+	if nextPos >= len(l.textToBeParsed) {
+		// the currPosition out of bounds
 		return 0
 	}
-	return l.input[nextPos]
+	return l.textToBeParsed[nextPos]
 }
 
 // isLetter judge current character is or isn't letter.

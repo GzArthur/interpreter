@@ -182,7 +182,7 @@ func (p *Parser) parseBoolean() ast.Expression {
 }
 
 func (p *Parser) parseIntegerLiteral() ast.Expression {
-	expr := &ast.IntegerLiteral{Token: p.currToken}
+	expr := &ast.Integer{Token: p.currToken}
 	value, err := strconv.ParseInt(p.currToken.Literal, 0, 64)
 	if err != nil {
 		p.errors = append(p.errors, fmt.Sprintf("could not parse %q as integer", p.currToken.Literal))
